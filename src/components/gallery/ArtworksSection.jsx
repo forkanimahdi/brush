@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom';
 import { artworks } from '../../data/artworks';
 import { useGsapStagger } from '../../hooks/useGsap';
 
 /**
- * Featured artworks. Renders from data/artworks.js via .map().
+ * Featured artworks. Renders from data/artworks.js via .map(). Discover more → All Arts page.
  */
 export function ArtworksSection() {
   const ref = useGsapStagger({ stagger: 0.15, y: 28 });
@@ -14,7 +15,7 @@ export function ArtworksSection() {
           Artworks
         </h2>
         <ul ref={ref} className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3" role="list">
-          {artworks.map((item) => (
+          {artworks.slice(0, 3).map((item) => (
             <li key={item.id} data-reveal>
               <article className="overflow-hidden rounded-sm border border-tertiary/10 bg-surface">
                 <img
@@ -30,6 +31,14 @@ export function ArtworksSection() {
             </li>
           ))}
         </ul>
+        <div className="mt-12 flex justify-center md:mt-16">
+          <Link
+            to="/arts"
+            className="rounded-sm border-2 border-tertiary/30 bg-transparent px-8 py-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:border-secondary hover:bg-secondary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50"
+          >
+            Discover more
+          </Link>
+        </div>
       </div>
     </section>
   );

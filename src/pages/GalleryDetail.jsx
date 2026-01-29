@@ -1,13 +1,25 @@
+import { useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { gsap } from 'gsap';
 import { getGalleryItemById } from '../data/gallery';
 import { PageLayout } from '../components/layout/PageLayout';
 
 /**
- * Gallery item detail page. Data from data/gallery.js by id.
+ * Gallery item detail page. Data from data/gallery.js by id. Image entrance: zoom + fade.
  */
 export function GalleryDetail() {
   const { id } = useParams();
   const item = getGalleryItemById(id);
+  const imageRef = useRef(null);
+
+  useEffect(() => {
+    if (!item || !imageRef.current) return;
+    gsap.fromTo(
+      imageRef.current,
+      { scale: 0.98, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out' }
+    );
+  }, [item]);
 
   if (!item) {
     return (
@@ -34,7 +46,10 @@ export function GalleryDetail() {
         >
           <span aria-hidden>←</span> Back to gallery
         </Link>
-        <div className="overflow-hidden rounded-sm border border-tertiary/10 bg-primary/20">
+        <div
+          ref={imageRef}
+          className="overflow-hidden rounded-sm border border-tertiary/10 bg-primary/20"
+        >
           <img
             src={item.src}
             alt={item.alt}

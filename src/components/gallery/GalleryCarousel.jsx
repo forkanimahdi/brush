@@ -1,5 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { gsap } from 'gsap';
 import { galleryItems } from '../../data/gallery';
 import { useCarousel3D } from '../../hooks/useCarousel3D';
 import { useModalTransition } from '../../hooks/useModalTransition';
@@ -9,18 +10,26 @@ import { useCarouselDimensions } from '../../hooks/useCarouselDimensions';
 const SCALE_CENTER = 1;
 const SCALE_SIDE_FALLOFF = 0.14;
 const SCALE_MIN = 0.68;
+const ZOOM_DURATION = 0.5;
+const ZOOM_SCALE = 1.1;
+const SIDES_FADE_DURATION = 0.35;
+const FLASH_DURATION = 0.2;
+const FLASH_DELAY = 0.12;
 
 /**
  * 3D gallery carousel: reference-style. Soft gradient, center card largest,
- * sides scale down. Clean on mobile (responsive dimensions, less tilt).
+ * sides scale down. Zoom-in transition when clicking to detail page.
  */
 export function GalleryCarousel({ isOpen, onClose }) {
   const navigate = useNavigate();
   const sceneRef = useRef(null);
+  const zoomRef = useRef(null);
+  const flashRef = useRef(null);
+  const [exitTransitionItem, setExitTransitionItem] = useState(null);
   const dims = useCarouselDimensions();
   const { ringRef, currentIndex, goNext, goPrev, angleStep } = useCarousel3D(galleryItems, {
-    duration: 0.85,
-    ease: 'power3.inOut',
+    duration: 1.05,
+    ease: 'power2.inOut',
   });
   const { backdropRef, contentRef, animateIn, animateOut } = useModalTransition({
     duration: 0.4,
@@ -34,16 +43,54 @@ export function GalleryCarousel({ isOpen, onClose }) {
 
   const pointerDownX = useRef(0);
 
-  const handleSlideClick = useCallback(
-    (item, e) => {
-      if (e && Math.abs(e.clientX - pointerDownX.current) > 24) return;
-      animateOut(() => {
+  const handleSlideClick = useCallback((item, e) => {
+    if (e && Math.abs(e.clientX - pointerDownX.current) > 24) return;
+    setExitTransitionItem(item);
+  }, []);
+
+  useEffect(() => {
+    if (!exitTransitionItem || !zoomRef.current || !contentRef.current) return;
+    const content = contentRef.current;
+    const zoomEl = zoomRef.current;
+    const flashEl = flashRef.current;
+
+    if (flashEl) gsap.set(flashEl, { opacity: 0 });
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        navigate(`/gallery/${exitTransitionItem.id}`);
         onClose();
-        navigate(`/gallery/${item.id}`);
-      });
-    },
-    [animateOut, onClose, navigate]
-  );
+        setExitTransitionItem(null);
+      },
+    });
+
+    tl.to(content, {
+      opacity: 0,
+      duration: SIDES_FADE_DURATION,
+      ease: 'power2.out',
+    }).fromTo(
+      zoomEl,
+      { scale: 1 },
+      {
+        scale: ZOOM_SCALE,
+        duration: ZOOM_DURATION,
+        ease: 'power2.inOut',
+      },
+      '-=0.15'
+    );
+
+    if (flashEl) {
+      tl.to(
+        flashEl,
+        {
+          opacity: 1,
+          duration: FLASH_DURATION,
+          ease: 'power2.in',
+        },
+        `+=${FLASH_DELAY}`
+      );
+    }
+  }, [exitTransitionItem, navigate, onClose]);
 
   const handlePointerDown = useCallback((e) => {
     pointerDownX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
@@ -85,6 +132,33 @@ export function GalleryCarousel({ isOpen, onClose }) {
       aria-modal="true"
       aria-label="Gallery carousel"
     >
+      {exitTransitionItem && (
+        <>
+          <div
+            className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-quaternary"
+            aria-hidden
+          >
+            <div
+              ref={zoomRef}
+              className="flex max-h-full max-w-full items-center justify-center"
+              style={{ transformOrigin: 'center center' }}
+            >
+              <img
+                src={exitTransitionItem.src}
+                alt=""
+                className="max-h-[90vh] max-w-[90vw] object-contain"
+                draggable={false}
+              />
+            </div>
+          </div>
+          <div
+            ref={flashRef}
+            className="pointer-events-none fixed inset-0 z-[60] bg-primary"
+            aria-hidden
+            style={{ opacity: 0 }}
+          />
+        </>
+      )}
       <div
         ref={backdropRef}
         className="absolute inset-0 bg-gradient-to-r from-quaternary via-tertiary/30 to-quaternary"
@@ -152,20 +226,25 @@ export function GalleryCarousel({ isOpen, onClose }) {
               >
                 {galleryItems.map((item, i) => {
                   const scale = getScale(i);
+                  const isFront = i === currentIndex;
+                  const nudgeZ = isFront ? 6 : 0;
                   return (
                     <button
                       key={item.id}
                       type="button"
                       onClick={(e) => handleSlideClick(item, e)}
-                      className="carousel-slide group absolute left-1/2 top-1/2 cursor-pointer overflow-visible rounded-xl border-0 bg-tertiary/10 shadow-lg transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary hover:shadow-xl"
+                      className="carousel-slide group absolute left-1/2 top-1/2 cursor-pointer overflow-hidden border-0 bg-tertiary/10 shadow-lg transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary hover:shadow-xl"
                       style={{
                         width: dims.slideWidth,
                         height: dims.slideHeight,
                         marginLeft: -dims.slideWidth / 2,
                         marginTop: -dims.slideHeight / 2,
                         transformStyle: 'preserve-3d',
-                        transform: `rotateY(${i * angleStep}deg) translateZ(${dims.radius}px) scale(${scale})`,
+                        transform: `rotateY(${i * angleStep}deg) translateZ(${dims.radius + nudgeZ}px) scale(${scale})`,
                         backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        isolation: 'isolate',
+                        willChange: 'transform',
                       }}
                       aria-label={`View ${item.alt}`}
                     >
@@ -173,7 +252,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         <img
                           src={item.src}
                           alt={item.alt}
-                          className="h-full w-full object-cover pointer-events-none"
+                          className="block h-full w-full object-cover object-center pointer-events-none"
                           draggable={false}
                         />
                       </span>

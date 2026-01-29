@@ -32,7 +32,9 @@ Use only Tailwind classes (e.g. `bg-surface`, `text-tertiary`). No hardcoded hex
 - **ui/Hero** — Dark hero; title + tagline; GSAP reveal.
 - **gallery/GallerySection** — CTA “Enter Gallery” opens fullscreen 3D carousel; GSAP reveal.
 - **gallery/GalleryCarousel** — 3D carousel (reference-style): **soft gradient** background (theme colors), **center card largest**, sides **scale down** by position. Rounded-xl cards, swipe/drag, click → `/gallery/:id`. **Mobile**: smaller slides/radius, less tilt (useCarouselDimensions). No floating decorations (clean). Renders `data/gallery.js`.
-- **gallery/ArtworksSection** — Renders `data/artworks.js`; light section; stagger reveal.
+- **gallery/ArtworksSection** — Renders first 3 from `data/artworks.js`; **Discover more** button → `/arts`. Stagger reveal.
+- **sections/TestimonialsSection** — Renders `data/testimonials.js` via .map(); grid of blockquotes; stagger reveal.
+- **pages/AllArts** — All arts page at `/arts`; **filters** by category (data: artworkCategories, getArtworksByCategory); back link to /#artworks.
 - **pages/GalleryDetail** — Detail page for one gallery item (`/gallery/:id`); uses `getGalleryItemById(id)`; image, caption, description, back link.
 
 ## Data
@@ -40,14 +42,15 @@ Use only Tailwind classes (e.g. `bg-surface`, `text-tertiary`). No hardcoded hex
 - `data/navigation.js` — `navigationItems` (id, label, href e.g. `#gallery`). Nav links use `/${href}` for home + hash.
 - `data/social.js` — `socialLinks` (id, label, href, ariaLabel). Artist social; add/remove here.
 - `data/gallery.js` — `galleryItems` (id, slug, src, alt, caption, description). Used by 3D carousel and **GalleryDetail** page. `getGalleryItemById(id)` for detail route. Placeholder images: Picsum; replace `src` with real paths.
-- `data/artworks.js` — `artworks` (id, slug, title, image, alt, description). Placeholder images: Picsum. `getArtworkById(id)` available.
+- `data/artworks.js` — `artworks` (id, slug, title, image, alt, description, **category**). `artworkCategories`, `getArtworkById(id)`, `getArtworksByCategory(category)`. Placeholder images: Picsum.
+- `data/testimonials.js` — `testimonials` (id, quote, author, role). Used by Testimonials section.
 
 Add/remove entries there; UI uses `.map()` only.
 
 ## Routing
 
-- **React Router**: `/` = Home, `/gallery/:id` = GalleryDetail (image + caption + description, back to home).
-- Clicking a slide in the 3D carousel closes the modal and navigates to `/gallery/:id`.
+- **React Router**: `/` = Home; `/gallery/:id` = GalleryDetail; **`/arts`** = AllArts (all artworks + category filters).
+- Nav: hash links (#home, #gallery, etc.) and **Link** for `/arts` (client-side). Clicking a carousel slide → `/gallery/:id`.
 
 ## Animations (GSAP)
 

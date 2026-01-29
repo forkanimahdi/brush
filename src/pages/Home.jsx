@@ -4,6 +4,7 @@ import { Hero } from '../components/ui/Hero';
 import { GallerySection } from '../components/gallery/GallerySection';
 import { GalleryCarousel } from '../components/gallery/GalleryCarousel';
 import { ArtworksSection } from '../components/gallery/ArtworksSection';
+import { TestimonialsSection } from '../components/sections/TestimonialsSection';
 
 /**
  * Home page. Light-dominant; gallery opens as fullscreen 3D carousel.
@@ -29,6 +30,7 @@ export const Home = () => {
           </p>
         </div>
       </section>
+      <TestimonialsSection />
       <section id="contact" className="border-t border-tertiary/10 bg-primary/40 py-20 md:py-28">
         <div className="mx-auto max-w-3xl px-4 text-center md:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-light tracking-wide uppercase text-tertiary md:text-4xl">

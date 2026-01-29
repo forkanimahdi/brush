@@ -40,15 +40,26 @@ export function Header() {
           className="hidden items-center gap-6 md:flex lg:gap-8"
           aria-label="Main"
         >
-          {navigationItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href.startsWith('#') ? `/${item.href}` : item.href}
-              className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navigationItems.map((item) => {
+            const isInternalRoute = item.href.startsWith('/') && !item.href.startsWith('/#');
+            return isInternalRoute ? (
+              <Link
+                key={item.id}
+                to={item.href}
+                className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.id}
+                href={item.href.startsWith('#') ? `/${item.href}` : item.href}
+                className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="hidden md:block shrink-0">
@@ -84,17 +95,30 @@ export function Header() {
         <div className="flex flex-col gap-6 px-5 py-8">
           <nav aria-label="Main mobile">
             <ul className="flex flex-col gap-0.5">
-              {navigationItems.map((item) => (
-                <li key={item.id}>
-                  <a
-                    href={item.href.startsWith('#') ? `/${item.href}` : item.href}
-                    onClick={closeMenu}
-                    className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+              {navigationItems.map((item) => {
+                const isInternalRoute = item.href.startsWith('/') && !item.href.startsWith('/#');
+                return (
+                  <li key={item.id}>
+                    {isInternalRoute ? (
+                      <Link
+                        to={item.href}
+                        onClick={closeMenu}
+                        className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.href.startsWith('#') ? `/${item.href}` : item.href}
+                        onClick={closeMenu}
+                        className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
+                      >
+                        {item.label}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
           <div className="border-t border-tertiary/10 pt-6">

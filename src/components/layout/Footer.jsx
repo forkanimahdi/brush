@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { navigationItems } from '../../data/navigation';
 import { SocialLinks } from '../ui/SocialLinks';
 
@@ -11,15 +12,26 @@ export function Footer() {
     <footer className="border-t border-tertiary/10 bg-primary/60">
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
         <nav className="mb-6 flex flex-wrap justify-center gap-6 md:gap-8" aria-label="Footer">
-          {navigationItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              className="text-sm uppercase tracking-wide text-tertiary/70 transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 rounded"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navigationItems.map((item) => {
+            const isInternalRoute = item.href.startsWith('/') && !item.href.startsWith('/#');
+            return isInternalRoute ? (
+              <Link
+                key={item.id}
+                to={item.href}
+                className="text-sm uppercase tracking-wide text-tertiary/70 transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 rounded"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.id}
+                href={item.href.startsWith('#') ? `/${item.href}` : item.href}
+                className="text-sm uppercase tracking-wide text-tertiary/70 transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 rounded"
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </nav>
         <SocialLinks className="mb-8" />
         <p className="text-center text-sm text-tertiary/50">

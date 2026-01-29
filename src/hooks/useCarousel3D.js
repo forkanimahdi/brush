@@ -10,7 +10,7 @@ import { gsap } from 'gsap';
  */
 export function useCarousel3D(items, options = {}) {
   const ringRef = useRef(null);
-  const { duration = 1.2, ease = 'power3.inOut' } = options;
+  const { duration = 1.1, ease = 'power2.inOut' } = options;
 
   const count = items?.length || 1;
   const angleStep = count > 0 ? 360 / count : 0;
