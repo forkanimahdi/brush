@@ -1,29 +1,53 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { galleryItems } from '../../data/gallery';
 import { useCarousel3D } from '../../hooks/useCarousel3D';
 import { useModalTransition } from '../../hooks/useModalTransition';
+import { useSwipe } from '../../hooks/useSwipe';
+import { useCarouselDimensions } from '../../hooks/useCarouselDimensions';
 
-const RADIUS = 320;
-const SLIDE_WIDTH = 280;
-const SLIDE_HEIGHT = 360;
+const SCALE_CENTER = 1;
+const SCALE_SIDE_FALLOFF = 0.14;
+const SCALE_MIN = 0.68;
 
 /**
- * Fullscreen 3D carousel modal. Opens from gallery section; GSAP for open/close and rotation.
- * Renders from data/gallery.js via .map().
+ * 3D gallery carousel: reference-style. Soft gradient, center card largest,
+ * sides scale down. Clean on mobile (responsive dimensions, less tilt).
  */
 export function GalleryCarousel({ isOpen, onClose }) {
+  const navigate = useNavigate();
+  const sceneRef = useRef(null);
+  const dims = useCarouselDimensions();
   const { ringRef, currentIndex, goNext, goPrev, angleStep } = useCarousel3D(galleryItems, {
-    duration: 1.1,
+    duration: 0.85,
     ease: 'power3.inOut',
   });
   const { backdropRef, contentRef, animateIn, animateOut } = useModalTransition({
-    duration: 0.55,
-    ease: 'power3.out',
+    duration: 0.4,
+    ease: 'power2.out',
   });
+  const swipe = useSwipe({ onNext: goNext, onPrev: goPrev });
 
   const handleClose = useCallback(() => {
     animateOut(() => onClose());
   }, [animateOut, onClose]);
+
+  const pointerDownX = useRef(0);
+
+  const handleSlideClick = useCallback(
+    (item, e) => {
+      if (e && Math.abs(e.clientX - pointerDownX.current) > 24) return;
+      animateOut(() => {
+        onClose();
+        navigate(`/gallery/${item.id}`);
+      });
+    },
+    [animateOut, onClose, navigate]
+  );
+
+  const handlePointerDown = useCallback((e) => {
+    pointerDownX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -32,6 +56,8 @@ export function GalleryCarousel({ isOpen, onClose }) {
     const t = requestAnimationFrame(() => animateIn());
     const onKeyDown = (e) => {
       if (e.key === 'Escape') handleClose();
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
     };
     document.addEventListener('keydown', onKeyDown);
     return () => {
@@ -39,11 +65,18 @@ export function GalleryCarousel({ isOpen, onClose }) {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isOpen, animateIn, handleClose]);
+  }, [isOpen, animateIn, handleClose, goPrev, goNext]);
 
   if (!isOpen) return null;
 
   const currentItem = galleryItems[currentIndex];
+  const count = galleryItems.length;
+
+  const getScale = (index) => {
+    let dist = Math.abs(index - currentIndex);
+    dist = Math.min(dist, count - dist);
+    return Math.max(SCALE_MIN, SCALE_CENTER - SCALE_SIDE_FALLOFF * dist);
+  };
 
   return (
     <div
@@ -54,7 +87,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
     >
       <div
         ref={backdropRef}
-        className="absolute inset-0 bg-quaternary/95 backdrop-blur-md"
+        className="absolute inset-0 bg-gradient-to-r from-quaternary via-tertiary/30 to-quaternary"
         onClick={handleClose}
         role="button"
         tabIndex={-1}
@@ -62,87 +95,113 @@ export function GalleryCarousel({ isOpen, onClose }) {
       />
       <div
         ref={contentRef}
-        className="relative z-10 flex h-full w-full flex-col items-center justify-center px-4 py-20"
+        className="relative z-10 flex h-full w-full flex-col items-center justify-center px-3 py-12 sm:px-6 sm:py-20"
       >
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-6 right-6 rounded p-2 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="absolute top-4 right-4 z-20 rounded-full p-2.5 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:top-6 sm:right-6"
           aria-label="Close gallery"
         >
           <CloseIcon />
         </button>
 
         <div
-          className="carousel-viewport relative h-[380px] w-full max-w-4xl"
-          style={{ perspective: '1200px', perspectiveOrigin: '50% 50%' }}
+          className="carousel-viewport relative flex w-full max-w-5xl flex-1 items-center justify-between overflow-visible px-1 sm:gap-4 sm:px-2"
+          style={{
+            minHeight: dims.viewportMinHeight,
+            perspective: `${dims.perspective}px`,
+            perspectiveOrigin: '50% 45%',
+          }}
         >
-          <div
-            className="carousel-ring-wrapper absolute left-1/2 top-1/2 h-0 w-0"
-            style={{ transform: 'translate(-50%, -50%)' }}
-          >
-            <div
-              ref={ringRef}
-              className="carousel-ring absolute left-0 top-0"
-              style={{
-                width: SLIDE_WIDTH,
-                height: SLIDE_HEIGHT,
-                left: -SLIDE_WIDTH / 2,
-                top: -SLIDE_HEIGHT / 2,
-                transformStyle: 'preserve-3d',
-              }}
-            >
-            {galleryItems.map((item, i) => (
-              <div
-                key={item.id}
-                className="carousel-slide absolute left-1/2 top-1/2 overflow-hidden rounded-sm border border-primary/20 bg-tertiary/20"
-                style={{
-                  width: SLIDE_WIDTH,
-                  height: SLIDE_HEIGHT,
-                  marginLeft: -SLIDE_WIDTH / 2,
-                  marginTop: -SLIDE_HEIGHT / 2,
-                  transformStyle: 'preserve-3d',
-                  transform: `rotateY(${i * angleStep}deg) translateZ(${RADIUS}px)`,
-                  backfaceVisibility: 'hidden',
-                }}
-              >
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className="h-full w-full object-cover"
-                  draggable={false}
-                />
-              </div>
-            ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex items-center gap-6">
           <button
             type="button"
             onClick={goPrev}
-            className="rounded p-2 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-2.5 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:left-2 sm:p-3"
             aria-label="Previous"
           >
             <PrevIcon />
           </button>
-          <p className="min-w-[200px] text-center text-sm font-light text-primary/90">
-            {currentItem?.caption ?? ''}
-          </p>
+
+          <div
+            ref={sceneRef}
+            className="carousel-scene relative flex-1 overflow-visible select-none"
+            style={{
+              minHeight: dims.viewportMinHeight,
+              transformStyle: 'preserve-3d',
+              transform: `perspective(${dims.perspective}px) rotateX(${dims.perspectiveTilt}deg)`,
+              touchAction: 'none',
+            }}
+            {...swipe}
+            onPointerDown={handlePointerDown}
+          >
+            <div
+              className="carousel-ring-wrapper absolute left-1/2 top-1/2 h-0 w-0"
+              style={{ transform: 'translate(-50%, -50%)' }}
+            >
+              <div
+                ref={ringRef}
+                className="carousel-ring absolute left-0 top-0"
+                style={{
+                  width: dims.slideWidth,
+                  height: dims.slideHeight,
+                  left: -dims.slideWidth / 2,
+                  top: -dims.slideHeight / 2,
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                {galleryItems.map((item, i) => {
+                  const scale = getScale(i);
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={(e) => handleSlideClick(item, e)}
+                      className="carousel-slide group absolute left-1/2 top-1/2 cursor-pointer overflow-visible rounded-xl border-0 bg-tertiary/10 shadow-lg transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary hover:shadow-xl"
+                      style={{
+                        width: dims.slideWidth,
+                        height: dims.slideHeight,
+                        marginLeft: -dims.slideWidth / 2,
+                        marginTop: -dims.slideHeight / 2,
+                        transformStyle: 'preserve-3d',
+                        transform: `rotateY(${i * angleStep}deg) translateZ(${dims.radius}px) scale(${scale})`,
+                        backfaceVisibility: 'hidden',
+                      }}
+                      aria-label={`View ${item.alt}`}
+                    >
+                      <span className="block h-full w-full overflow-hidden rounded-xl transition-transform duration-300 ease-out group-hover:scale-[1.02]">
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          className="h-full w-full object-cover pointer-events-none"
+                          draggable={false}
+                        />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={goNext}
-            className="rounded p-2 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-2.5 text-primary/90 transition hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:right-2 sm:p-3"
             aria-label="Next"
           >
             <NextIcon />
           </button>
         </div>
 
-        <p className="mt-2 text-xs text-primary/50">
-          {currentIndex + 1} / {galleryItems.length}
-        </p>
+        <div className="mt-4 w-full max-w-xl px-2 text-center sm:mt-6">
+          <p className="text-sm font-light text-primary/90">
+            {currentItem?.caption ?? ''}
+          </p>
+          <p className="mt-1 text-xs text-primary/50">
+            {currentIndex + 1} / {count} · Swipe or arrows · Tap for details
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -150,7 +209,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
 
 function CloseIcon() {
   return (
-    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
@@ -158,7 +217,7 @@ function CloseIcon() {
 
 function PrevIcon() {
   return (
-    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-6 w-6 sm:h-8 sm:w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
     </svg>
   );
@@ -166,7 +225,7 @@ function PrevIcon() {
 
 function NextIcon() {
   return (
-    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className="h-6 w-6 sm:h-8 sm:w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
     </svg>
   );
