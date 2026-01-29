@@ -1,7 +1,8 @@
 import { navigationItems } from '../../data/navigation';
+import { SocialLinks } from '../ui/SocialLinks';
 
 /**
- * Site footer. Uses same nav data; minimal, luxury feel.
+ * Site footer. Nav + artist social; data-driven.
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,7 +10,7 @@ export function Footer() {
   return (
     <footer className="border-t border-tertiary/10 bg-primary/60">
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
-        <nav className="mb-8 flex flex-wrap justify-center gap-6 md:gap-8" aria-label="Footer">
+        <nav className="mb-6 flex flex-wrap justify-center gap-6 md:gap-8" aria-label="Footer">
           {navigationItems.map((item) => (
             <a
               key={item.id}
@@ -20,6 +21,7 @@ export function Footer() {
             </a>
           ))}
         </nav>
+        <SocialLinks className="mb-8" />
         <p className="text-center text-sm text-tertiary/50">
           © {currentYear} Hanane Brush. All rights reserved.
         </p>

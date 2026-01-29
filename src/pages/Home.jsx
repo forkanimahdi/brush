@@ -1,16 +1,21 @@
+import { useState } from 'react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Hero } from '../components/ui/Hero';
-import { GalleryGrid } from '../components/gallery/GalleryGrid';
+import { GallerySection } from '../components/gallery/GallerySection';
+import { GalleryCarousel } from '../components/gallery/GalleryCarousel';
 import { ArtworksSection } from '../components/gallery/ArtworksSection';
 
 /**
- * Home page. Light-dominant merge: hero + mid band dark; rest light. All content data-driven.
+ * Home page. Light-dominant; gallery opens as fullscreen 3D carousel.
  */
 export const Home = () => {
+  const [isGalleryOpen, setGalleryOpen] = useState(false);
+
   return (
     <PageLayout>
       <Hero />
-      <GalleryGrid />
+      <GallerySection onEnterGallery={() => setGalleryOpen(true)} />
+      <GalleryCarousel isOpen={isGalleryOpen} onClose={() => setGalleryOpen(false)} />
       <StatementBand />
       <ArtworksSection />
       <section id="about" className="border-t border-tertiary/10 bg-surface py-20 md:py-28">
