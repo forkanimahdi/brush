@@ -1,0 +1,127 @@
+---
+description: Web design rules for luxury calligraphic artist portfolio — scope, tech stack, design, GSAP, docs, quality
+alwaysApply: true
+---
+
+# Calligraphic Artist Portfolio — Cursor Rules
+
+## 1. Project Scope
+
+- **Product**: Luxury artist portfolio & gallery website.
+- **Artist**: Calligraphic artist.
+- **Content**: Artworks, Gallery, Artist identity, high-end visual storytelling.
+- **Style**: Luxury, minimal, editorial, artistic — calm but powerful, museum/gallery feel.
+
+---
+
+## 2. Tech Stack (STRICT)
+
+| Allowed | Forbidden |
+|--------|-----------|
+| **Tailwind CSS only** for styling | No CSS files (except Tailwind entry) |
+| **GSAP** for animations (scroll-based, subtle, premium) | No inline styles |
+| **JSX** (not TSX) | — |
+| **Fully responsive** (mobile-first → ultra-wide) | — |
+
+---
+
+## 3. Design & Animation
+
+- **Visual**: Luxury, museum/gallery/editorial; calm but powerful.
+- **Animations**: GSAP only. Subtle entrances, smooth scroll reveals. No over-animation.
+- **Typography**: Clear, elegant hierarchy.
+
+---
+
+## 4. Tailwind Theme (MANDATORY)
+
+Theme lives in Tailwind (e.g. `@theme` in CSS or `theme/tailwindTheme.js`). Use these as **Tailwind variables only**:
+
+- `--color-primary`: #E6E6E6
+- `--color-secondary`: #C5A880
+- `--color-tertiary`: #532E1C
+- `--color-quaternary`: #0F0F0F
+
+**Rules**: No hardcoded hex/rgb anywhere. Always use theme classes (e.g. `bg-primary`, `text-tertiary`). Use contrast carefully for luxury feel.
+
+---
+
+## 5. Component Architecture (VERY IMPORTANT)
+
+- Everything **reusable**; no duplicated JSX or repeated layout logic.
+- All UI **data-driven**: arrays/objects → `.map()`.
+- **Examples**: Gallery images → array; Artworks → array; Sections → array; Navigation → array.
+- No hardcoded repeated blocks; components render from data only.
+
+---
+
+## 6. Dynamic Content
+
+- **Source**: `data/*.js` (e.g. `artworks.js`, `gallery.js`, `navigation.js`).
+- Components render using **`.map()` only** over these data structures.
+- No hardcoded repeated UI.
+
+---
+
+## 7. Folder Structure (STRICT)
+
+```
+src/
+├── components/
+│   ├── layout/
+│   ├── gallery/
+│   ├── ui/
+│   └── animations/
+├── data/
+│   ├── artworks.js
+│   ├── gallery.js
+│   └── navigation.js
+├── pages/
+│   └── Home.jsx
+├── hooks/
+│   └── useGsap.js
+├── theme/
+│   └── tailwindTheme.js
+├── docs/
+│   └── documentation.md
+└── assets/
+```
+
+Follow this exactly. Add new pieces in the correct folder.
+
+---
+
+## 8. GSAP Rules
+
+- **Centralize**: Custom hooks only (e.g. `useGsap`); no GSAP code directly inside JSX.
+- Animations **reusable**; prefer **timelines** over single tweens.
+
+---
+
+## 9. Documentation (MANDATORY)
+
+- **Single file**: `docs/documentation.md`.
+- On every addition (component, animation, data structure): **update the markdown** — what it is, why it exists, how to extend.
+- Keep it clean, structured, readable.
+
+---
+
+## 10. Code Quality
+
+- Clean JSX; small components; descriptive names.
+- No unused code, no magic numbers, no repetition.
+- Think in **systems**, not pages.
+
+---
+
+## 11. Mindset
+
+Behave as:
+
+- **Senior creative frontend architect**
+- **Luxury brand web designer**
+- **Clean-code purist**
+
+- If a solution **repeats code** → reject it.
+- If a component **can be reused** → extract it.
+- If animation is **not meaningful** → remove it.
