@@ -65,26 +65,16 @@ Theme lives in Tailwind (e.g. `@theme` in CSS or `theme/tailwindTheme.js`). Use 
 
 ## 7. Folder Structure (STRICT)
 
+Each page module should follow this structure:
 ```
-src/
-├── components/
-│   ├── layout/
-│   ├── gallery/
-│   ├── ui/
-│   └── animations/
-├── data/
-│   ├── artworks.js
-│   ├── gallery.js
-│   └── navigation.js
-├── pages/
-│   └── Home.jsx
-├── hooks/
-│   └── useGsap.js
-├── theme/
-│   └── tailwindTheme.js
-├── docs/
-│   └── documentation.md
-└── assets/
+pages/
+ └── module-name/
+     ├── index.jsx          # Main index page (should import and use partials)
+     ├── [id].jsx           # Details page for individual items
+     └── partials/           # Reusable partial components
+         ├── module-form.jsx      # Form component (if applicable)
+         ├── module-list.jsx      # List component (if applicable)
+         └── module-details.jsx   # Details component (if applicable)
 ```
 
 Follow this exactly. Add new pieces in the correct folder.
