@@ -1,31 +1,24 @@
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { gsap } from 'gsap';
 import { galleryItems } from '../../data/gallery';
 import { useCarousel3D } from '../../hooks/useCarousel3D';
 import { useModalTransition } from '../../hooks/useModalTransition';
 import { useSwipe } from '../../hooks/useSwipe';
 import { useCarouselDimensions } from '../../hooks/useCarouselDimensions';
+import { useGalleryTransition } from '../../context/GalleryTransitionContext';
 
 const SCALE_CENTER = 1;
 const SCALE_SIDE_FALLOFF = 0.14;
 const SCALE_MIN = 0.8;
-const ZOOM_DURATION = 0.6;
-const ZOOM_SCALE = 1.04;
-const SIDES_FADE_DURATION = 0.3;
-const FLASH_DURATION = 0.18;
-const FLASH_START = 0;
 
 /**
- * 3D gallery carousel: reference-style. Soft gradient, center card largest,
- * sides scale down. Zoom-in transition when clicking to detail page.
+ * 3D gallery carousel. Clicking a slide starts shared-element transition:
+ * image animates from carousel position to detail page position.
  */
 export function GalleryCarousel({ isOpen, onClose }) {
   const navigate = useNavigate();
   const sceneRef = useRef(null);
-  const zoomRef = useRef(null);
-  const flashRef = useRef(null);
-  const [exitTransitionItem, setExitTransitionItem] = useState(null);
+  const { startTransition } = useGalleryTransition();
   const dims = useCarouselDimensions();
   const { ringRef, currentIndex, goNext, goPrev, angleStep } = useCarousel3D(galleryItems, {
     duration: 1.35,
@@ -43,52 +36,17 @@ export function GalleryCarousel({ isOpen, onClose }) {
 
   const pointerDownX = useRef(0);
 
-  const handleSlideClick = useCallback((item, e) => {
-    if (e && Math.abs(e.clientX - pointerDownX.current) > 24) return;
-    setExitTransitionItem(item);
-  }, []);
-
-  useEffect(() => {
-    if (!exitTransitionItem || !zoomRef.current || !contentRef.current) return;
-    const content = contentRef.current;
-    const zoomEl = zoomRef.current;
-    const flashEl = flashRef.current;
-
-    if (flashEl) gsap.set(flashEl, { opacity: 0 });
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        navigate(`/gallery/${exitTransitionItem.id}`);
-        onClose();
-        setExitTransitionItem(null);
-      },
-    });
-
-    tl.to(content, {
-      opacity: 0,
-      duration: SIDES_FADE_DURATION,
-      ease: 'power2.out',
-    });
-
-    tl.fromTo(
-      zoomEl,
-      { scale: 1 },
-      {
-        scale: ZOOM_SCALE,
-        duration: ZOOM_DURATION,
-        ease: 'power2.out',
-      },
-      `-=${SIDES_FADE_DURATION}`
-    );
-
-    if (flashEl) {
-      tl.to(
-        flashEl,
-        { opacity: 1, duration: FLASH_DURATION, ease: 'power2.in' },
-        `-=${FLASH_START + ZOOM_DURATION - FLASH_DURATION * 0.5}`
-      );
-    }
-  }, [exitTransitionItem, navigate, onClose]);
+  const handleSlideClick = useCallback(
+    (item, e) => {
+      if (e && Math.abs(e.clientX - pointerDownX.current) > 24) return;
+      const sourceRect = e?.currentTarget?.getBoundingClientRect?.();
+      if (!sourceRect) return;
+      startTransition(item, sourceRect);
+      navigate(`/gallery/${item.id}`);
+      onClose();
+    },
+    [startTransition, navigate, onClose]
+  );
 
   const handlePointerDown = useCallback((e) => {
     pointerDownX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
@@ -130,33 +88,6 @@ export function GalleryCarousel({ isOpen, onClose }) {
       aria-modal="true"
       aria-label="Gallery carousel"
     >
-      {exitTransitionItem && (
-        <>
-          <div
-            className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-quaternary"
-            aria-hidden
-          >
-            <div
-              ref={zoomRef}
-              className="flex max-h-full max-w-full items-center justify-center"
-              style={{ transformOrigin: 'center center' }}
-            >
-              <img
-                src={exitTransitionItem.src}
-                alt=""
-                className="max-h-[90vh] max-w-[90vw] object-contain"
-                draggable={false}
-              />
-            </div>
-          </div>
-          <div
-            ref={flashRef}
-            className="pointer-events-none fixed inset-0 z-[60] bg-primary"
-            aria-hidden
-            style={{ opacity: 0 }}
-          />
-        </>
-      )}
       <div
         ref={backdropRef}
         className="absolute inset-0 bg-gradient-to-r from-quaternary via-tertiary/30 to-quaternary"

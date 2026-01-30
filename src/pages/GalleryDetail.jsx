@@ -3,23 +3,41 @@ import { Link, useParams } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { getGalleryItemById } from '../data/gallery';
 import { PageLayout } from '../components/layout/PageLayout';
+import { useGalleryTransition } from '../context/GalleryTransitionContext';
 
 /**
- * Gallery item detail page. Data from data/gallery.js by id. Image entrance: zoom + fade.
+ * Gallery item detail page. Image enters via shared-element transition from carousel
+ * or with zoom + fade when opened directly.
  */
 export function GalleryDetail() {
   const { id } = useParams();
   const item = getGalleryItemById(id);
   const imageRef = useRef(null);
+  const { transitionItemId } = useGalleryTransition();
+  const isFromCarousel = transitionItemId === id;
 
   useEffect(() => {
     if (!item || !imageRef.current) return;
+    if (isFromCarousel) {
+      gsap.set(imageRef.current, { opacity: 0 });
+      return;
+    }
     gsap.fromTo(
       imageRef.current,
       { scale: 0.98, opacity: 0 },
       { scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out' }
     );
-  }, [item]);
+  }, [item, isFromCarousel]);
+
+  // When shared-element transition ends (transitionItemId becomes null), fade in the detail image
+  const prevTransitionId = useRef(transitionItemId);
+  useEffect(() => {
+    if (!item || !imageRef.current) return;
+    if (prevTransitionId.current === id && transitionItemId !== id) {
+      gsap.to(imageRef.current, { opacity: 1, duration: 0.28, ease: 'power2.out' });
+    }
+    prevTransitionId.current = transitionItemId;
+  }, [item, id, transitionItemId]);
 
   if (!item) {
     return (
@@ -48,7 +66,9 @@ export function GalleryDetail() {
         </Link>
         <div
           ref={imageRef}
+          data-gallery-detail-image
           className="overflow-hidden rounded-sm border border-tertiary/10 bg-primary/20"
+          style={isFromCarousel ? { opacity: 0 } : undefined}
         >
           <img
             src={item.src}
