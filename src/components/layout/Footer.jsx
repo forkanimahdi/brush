@@ -9,7 +9,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-tertiary/10 bg-primary/60">
+    <footer className="border-t border-quaternary/10 bg-secondary">
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
         <nav className="mb-6 flex flex-wrap justify-center gap-6 md:gap-8" aria-label="Footer">
           {navigationItems.map((item) => {

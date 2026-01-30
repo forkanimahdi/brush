@@ -61,7 +61,10 @@ export function GalleryTransitionProvider({ children }) {
           height: targetRect.height,
           duration: TRANSITION_DURATION,
           ease: TRANSITION_EASE,
-          onComplete: clearTransition,
+          onComplete: () => {
+            targetEl.style.opacity = '1';
+            clearTransition();
+          },
         });
       });
     });
@@ -74,7 +77,7 @@ export function GalleryTransitionProvider({ children }) {
       {isActive && state.item && state.sourceRect && (
         <div
           ref={overlayRef}
-          className="pointer-events-none fixed z-[200] overflow-hidden rounded-sm bg-primary/20"
+          className="pointer-events-none fixed z-[200] overflow-hidden rounded-sm bg-transparent"
           style={{
             left: state.sourceRect.left,
             top: state.sourceRect.top,

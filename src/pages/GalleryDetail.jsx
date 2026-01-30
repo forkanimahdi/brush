@@ -16,6 +16,11 @@ export function GalleryDetail() {
   const { transitionItemId } = useGalleryTransition();
   const isFromCarousel = transitionItemId === id;
 
+  // Scroll to top when entering the gallery detail page
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [id]);
+
   useEffect(() => {
     if (!item || !imageRef.current) return;
     if (isFromCarousel) {
@@ -28,16 +33,6 @@ export function GalleryDetail() {
       { scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out' }
     );
   }, [item, isFromCarousel]);
-
-  // When shared-element transition ends (transitionItemId becomes null), fade in the detail image
-  const prevTransitionId = useRef(transitionItemId);
-  useEffect(() => {
-    if (!item || !imageRef.current) return;
-    if (prevTransitionId.current === id && transitionItemId !== id) {
-      gsap.to(imageRef.current, { opacity: 1, duration: 0.28, ease: 'power2.out' });
-    }
-    prevTransitionId.current = transitionItemId;
-  }, [item, id, transitionItemId]);
 
   if (!item) {
     return (
