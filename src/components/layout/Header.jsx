@@ -33,7 +33,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-tertiary/10 bg-surface/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-4 lg:px-8">
         <Link to="/" className="shrink-0" aria-label="Home">
-          <Logo href={null} variant="light-bg" />
+          <Logo href={null} variant="dark-bg" />
         </Link>
 
         <nav

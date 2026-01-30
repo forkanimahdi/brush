@@ -9,12 +9,12 @@ import { useCarouselDimensions } from '../../hooks/useCarouselDimensions';
 
 const SCALE_CENTER = 1;
 const SCALE_SIDE_FALLOFF = 0.14;
-const SCALE_MIN = 0.68;
-const ZOOM_DURATION = 0.5;
-const ZOOM_SCALE = 1.1;
-const SIDES_FADE_DURATION = 0.35;
-const FLASH_DURATION = 0.2;
-const FLASH_DELAY = 0.12;
+const SCALE_MIN = 0.8;
+const ZOOM_DURATION = 0.6;
+const ZOOM_SCALE = 1.04;
+const SIDES_FADE_DURATION = 0.3;
+const FLASH_DURATION = 0.18;
+const FLASH_START = 0;
 
 /**
  * 3D gallery carousel: reference-style. Soft gradient, center card largest,
@@ -28,8 +28,8 @@ export function GalleryCarousel({ isOpen, onClose }) {
   const [exitTransitionItem, setExitTransitionItem] = useState(null);
   const dims = useCarouselDimensions();
   const { ringRef, currentIndex, goNext, goPrev, angleStep } = useCarousel3D(galleryItems, {
-    duration: 1.05,
-    ease: 'power2.inOut',
+    duration: 1.35,
+    ease: 'power3.out',
   });
   const { backdropRef, contentRef, animateIn, animateOut } = useModalTransition({
     duration: 0.4,
@@ -68,26 +68,24 @@ export function GalleryCarousel({ isOpen, onClose }) {
       opacity: 0,
       duration: SIDES_FADE_DURATION,
       ease: 'power2.out',
-    }).fromTo(
+    });
+
+    tl.fromTo(
       zoomEl,
       { scale: 1 },
       {
         scale: ZOOM_SCALE,
         duration: ZOOM_DURATION,
-        ease: 'power2.inOut',
+        ease: 'power2.out',
       },
-      '-=0.15'
+      `-=${SIDES_FADE_DURATION}`
     );
 
     if (flashEl) {
       tl.to(
         flashEl,
-        {
-          opacity: 1,
-          duration: FLASH_DURATION,
-          ease: 'power2.in',
-        },
-        `+=${FLASH_DELAY}`
+        { opacity: 1, duration: FLASH_DURATION, ease: 'power2.in' },
+        `-=${FLASH_START + ZOOM_DURATION - FLASH_DURATION * 0.5}`
       );
     }
   }, [exitTransitionItem, navigate, onClose]);
@@ -209,6 +207,18 @@ export function GalleryCarousel({ isOpen, onClose }) {
             {...swipe}
             onPointerDown={handlePointerDown}
           >
+            {/* Full-size click overlay for current slide so entire image is clickable */}
+            <button
+              type="button"
+              onClick={(e) => handleSlideClick(currentItem, e)}
+              onPointerDown={handlePointerDown}
+              className="absolute left-1/2 top-1/2 z-[5] -translate-x-1/2 -translate-y-1/2 cursor-pointer border-0 bg-transparent p-0 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-transparent"
+              style={{
+                width: dims.slideWidth,
+                height: dims.slideHeight,
+              }}
+              aria-label={`View ${currentItem?.alt ?? 'image'}`}
+            />
             <div
               className="carousel-ring-wrapper absolute left-1/2 top-1/2 h-0 w-0"
               style={{ transform: 'translate(-50%, -50%)' }}

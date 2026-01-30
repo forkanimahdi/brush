@@ -17,19 +17,19 @@ export function useCarouselDimensions() {
 
   return isMobile
     ? {
-        slideWidth: 260,
-        slideHeight: 340,
-        radius: 220,
+        slideWidth: 300,
+        slideHeight: 400,
+        radius: 260,
         perspectiveTilt: 4,
-        viewportMinHeight: 380,
+        viewportMinHeight: 420,
         perspective: 1400,
       }
     : {
-        slideWidth: 360,
-        slideHeight: 460,
-        radius: 300,
+        slideWidth: 420,
+        slideHeight: 540,
+        radius: 360,
         perspectiveTilt: 8,
-        viewportMinHeight: 500,
+        viewportMinHeight: 580,
         perspective: 2000,
       };
 }

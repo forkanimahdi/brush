@@ -48,9 +48,9 @@ export const Home = () => {
 /** Dark accent band between gallery and artworks (editorial break). */
 function StatementBand() {
   return (
-    <section className="bg-quaternary py-16 md:py-20" aria-hidden>
+    <section className="bg-secondary py-16 md:py-20" aria-hidden>
       <div className="mx-auto max-w-4xl px-4 text-center md:px-6 lg:px-8">
-        <p className="text-lg font-light tracking-wide text-primary/90 md:text-xl">
+        <p className="text-lg font-light tracking-wide text-quaternary md:text-xl">
           Every stroke carries intention. Every piece tells a story.
         </p>
       </div>
