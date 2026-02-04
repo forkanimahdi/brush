@@ -8,19 +8,19 @@ import { useGalleryTransition } from '../../context/GalleryTransitionContext';
 import { useArts } from '../../context/ArtsContext';
 
 const SCALE_CENTER = 1;
-const SCALE_SIDE_FALLOFF = 0.28;
-const SCALE_MIN = 0.22;
-const OPACITY_CENTER = 1;
-const OPACITY_FALLOFF = 0.35;
-const OPACITY_MIN = 0.08;
+const SCALE_SIDE_FALLOFF = 0.14;
+const SCALE_MIN = 0.8;
 
 /**
  * 3D gallery carousel. Clicking a slide starts shared-element transition:
  * image animates from carousel position to detail page position.
  */
-/** Map arts to carousel item shape (id, src, alt, caption). */
+const MAX_CAROUSEL_SLIDES = 8;
+
+/** Map arts to carousel item shape (id, src, alt, caption). Limit count so 3D ring stays readable. */
 function toCarouselItems(artsList) {
-  return artsList.map((a) => ({
+  const list = artsList.slice(0, MAX_CAROUSEL_SLIDES);
+  return list.map((a) => ({
     id: a.id,
     src: a.image,
     alt: a.name,
@@ -94,12 +94,6 @@ export function GalleryCarousel({ isOpen, onClose }) {
     let dist = Math.abs(index - currentIndex);
     dist = Math.min(dist, count - dist);
     return Math.max(SCALE_MIN, SCALE_CENTER - SCALE_SIDE_FALLOFF * dist);
-  };
-
-  const getOpacity = (index) => {
-    let dist = Math.abs(index - currentIndex);
-    dist = Math.min(dist, count - dist);
-    return Math.max(OPACITY_MIN, OPACITY_CENTER - OPACITY_FALLOFF * dist);
   };
 
   return (
@@ -188,9 +182,8 @@ export function GalleryCarousel({ isOpen, onClose }) {
               >
                 {galleryItems.map((item, i) => {
                   const scale = getScale(i);
-                  const opacity = getOpacity(i);
                   const isFront = i === currentIndex;
-                  const nudgeZ = isFront ? 8 : 0;
+                  const nudgeZ = isFront ? 6 : 0;
                   return (
                     <button
                       key={item.id}
@@ -208,7 +201,6 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         WebkitBackfaceVisibility: 'hidden',
                         isolation: 'isolate',
                         willChange: 'transform',
-                        opacity,
                       }}
                       aria-label={`View ${item.alt}`}
                     >
@@ -216,9 +208,8 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         <img
                           src={item.src}
                           alt={item.alt}
-                          className="block h-full w-full object-cover object-center pointer-events-none select-none"
+                          className="block h-full w-full object-cover object-center pointer-events-none"
                           draggable={false}
-                          loading="eager"
                         />
                       </span>
                     </button>

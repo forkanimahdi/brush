@@ -1,9 +1,13 @@
+import { useState, useEffect, useRef } from 'react';
 import { useGsapReveal } from '../../hooks/useGsap';
 import { useArts } from '../../context/ArtsContext';
 import { buyBookUrl } from '../../data/links';
 
+const HERO_INTERVAL_MS = 4500;
+const FLASH_DURATION_MS = 180;
+
 /**
- * Hero section: real arts data (background from first art), book CTA.
+ * Hero: random starting image, auto-play carousel with flash transition (no sliding).
  */
 export function Hero() {
   const { arts } = useArts();
@@ -11,7 +15,38 @@ export function Hero() {
   const subRef = useGsapReveal({ y: 24, duration: 0.9, delay: 0.4 });
   const ctaRef = useGsapReveal({ y: 20, duration: 0.8, delay: 0.55 });
 
-  const heroImage = arts.length > 0 ? arts[0].image : null;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [flashOpacity, setFlashOpacity] = useState(0);
+  const intervalRef = useRef(null);
+  const flashTimeoutRef = useRef(null);
+  const hasRandomized = useRef(false);
+
+  useEffect(() => {
+    if (arts.length > 0 && !hasRandomized.current) {
+      setCurrentIndex(Math.floor(Math.random() * arts.length));
+      hasRandomized.current = true;
+    }
+  }, [arts.length]);
+
+  useEffect(() => {
+    if (arts.length <= 1) return;
+
+    function goToNext() {
+      setFlashOpacity(1);
+      flashTimeoutRef.current = window.setTimeout(() => {
+        setCurrentIndex((i) => (i + 1) % arts.length);
+        setFlashOpacity(0);
+      }, FLASH_DURATION_MS);
+    }
+
+    intervalRef.current = window.setInterval(goToNext, HERO_INTERVAL_MS);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
+    };
+  }, [arts.length]);
+
+  const heroImage = arts.length > 0 ? arts[currentIndex].image : null;
 
   return (
     <section
@@ -28,6 +63,15 @@ export function Hero() {
       }
     >
       <div className="absolute inset-0 bg-quaternary/85" aria-hidden />
+      {/* Flash overlay for auto-play transition (flash in, then reveal next image) */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] bg-primary transition-opacity ease-out"
+        style={{
+          opacity: flashOpacity,
+          transitionDuration: flashOpacity === 1 ? '120ms' : '280ms',
+        }}
+        aria-hidden
+      />
       <div className="relative z-10 mx-auto max-w-4xl text-center">
         <h1
           ref={titleRef}
