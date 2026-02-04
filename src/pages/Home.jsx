@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Hero } from '../components/ui/Hero';
 import { GallerySection } from '../components/gallery/GallerySection';

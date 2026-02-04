@@ -127,21 +127,23 @@ export function Header() {
             <ul className="flex flex-col gap-0.5">
               {navigationItems.map((item) => {
                 const isInternalRoute = item.href.startsWith('/') && !item.href.startsWith('/#');
+                const isHashLink = item.href.startsWith('#');
+                const navLinkClass = "block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset";
                 return (
                   <li key={item.id}>
                     {isInternalRoute ? (
-                      <Link
-                        to={item.href}
-                        onClick={closeMenu}
-                        className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
-                      >
+                      <Link to={item.href} onClick={closeMenu} className={navLinkClass}>
+                        {item.label}
+                      </Link>
+                    ) : isHashLink && !isHome ? (
+                      <Link to={`/${item.href}`} onClick={closeMenu} className={navLinkClass}>
                         {item.label}
                       </Link>
                     ) : (
                       <a
-                        href={item.href.startsWith('#') ? `/${item.href}` : item.href}
-                        onClick={item.href.startsWith('#') ? (e) => handleHashClick(e, item.href) : closeMenu}
-                        className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
+                        href={isHashLink ? `/${item.href}` : item.href}
+                        onClick={isHashLink ? (e) => handleHashClick(e, item.href) : closeMenu}
+                        className={navLinkClass}
                       >
                         {item.label}
                       </a>
