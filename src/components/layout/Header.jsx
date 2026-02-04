@@ -113,7 +113,7 @@ export function Header() {
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className="fixed inset-y-0 right-0 z-40 w-full max-w-[280px] border-l border-tertiary/10 bg-white shadow-xl md:hidden"
+        className="fixed  inset-y-0 right-0 z-40 w-full max-w-[280px] border-l border-tertiary/10 bg-white shadow-xl md:hidden"
         aria-hidden={!menuOpen}
         style={{
           transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -122,7 +122,7 @@ export function Header() {
           transition: 'transform 0.25s ease-out, visibility 0.25s',
         }}
       >
-        <div className="flex flex-col gap-6 px-5 py-8">
+        <div className="flex bg-white h-screen flex-col gap-6 px-5 py-8">
           <nav aria-label="Main mobile">
             <ul className="flex flex-col gap-0.5">
               {navigationItems.map((item) => {

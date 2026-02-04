@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGsapReveal } from '../../hooks/useGsap';
 import { useArts } from '../../context/ArtsContext';
-import { buyBookUrl } from '../../data/links';
+import { orderArtUrl } from '../../data/links';
 
 const HERO_INTERVAL_MS = 7000;
 const FLASH_DURATION_MS = 180;
@@ -86,18 +86,18 @@ export function Hero() {
           Luxury strokes. Timeless script. Hanane Brush.
         </p>
         <p className="mx-auto mt-3 max-w-lg text-base text-primary/70 md:text-lg">
-          Discover the book—a journey through traditional script and contemporary expression.
+          Your space deserves a piece that speaks to you. Commission a unique work—created for your table, your walls, your story.
         </p>
         <div className="mt-10">
           <a
             ref={ctaRef}
-            href={buyBookUrl}
+            href={orderArtUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block rounded-sm border-2 border-primary bg-primary px-8 py-3.5 text-sm font-medium uppercase tracking-wide text-quaternary transition hover:border-secondary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary"
-            aria-label="Buy the book on WhatsApp"
+            aria-label="Commission your custom art via WhatsApp"
           >
-            Buy the book
+            Commission your piece
           </a>
         </div>
       </div>

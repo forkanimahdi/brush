@@ -167,7 +167,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
             />
             <div
               className="carousel-ring-wrapper absolute left-1/2 top-1/2 h-0 w-0"
-              style={{ transform: 'translate(-50%, -50%)' }}
+              style={{ transform: 'translate(-50%, -50%)' , pointerEvents: '1400px' }}
             >
               <div
                 ref={ringRef}
@@ -189,7 +189,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
                       key={item.id}
                       type="button"
                       onClick={(e) => handleSlideClick(item, e)}
-                      className="carousel-slide group absolute left-1/2 top-1/2 cursor-pointer overflow-hidden border-0 bg-tertiary/10 shadow-lg transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary hover:shadow-xl"
+                      className="carousel-slide group absolute left-1/2 z-40 top-1/2 cursor-pointer overflow-hidden border-0 bg-tertiary/10 shadow-lg transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary hover:shadow-xl"
                       style={{
                         width: dims.slideWidth,
                         height: dims.slideHeight,
@@ -201,7 +201,9 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         WebkitBackfaceVisibility: 'hidden',
                         isolation: 'isolate',
                         willChange: 'transform',
-                        zIndex: isFront ? 10 : 0,
+                        
+                        transform: `rotateY(${i * angleStep}deg) translateZ(${dims.radius + nudgeZ +60}px) scale(${scale})`,
+                        zIndex: isFront ? 50 : 0,
                       }}
                       aria-label={`View ${item.alt}`}
                     >
