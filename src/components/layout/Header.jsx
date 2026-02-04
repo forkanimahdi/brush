@@ -12,6 +12,17 @@ export function Header() {
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
+  const handleHashClick = useCallback((e, href) => {
+    if (!href.startsWith('#')) return;
+    const id = href.replace('#', '').trim();
+    if (!id) return;
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.pushState(null, '', `/#${id}`);
+    closeMenu();
+  }, [closeMenu]);
+
   useEffect(() => {
     if (!menuOpen) return;
     const onResize = () => {
@@ -54,6 +65,7 @@ export function Header() {
               <a
                 key={item.id}
                 href={item.href.startsWith('#') ? `/${item.href}` : item.href}
+                onClick={item.href.startsWith('#') ? (e) => handleHashClick(e, item.href) : undefined}
                 className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
               >
                 {item.label}
@@ -110,7 +122,7 @@ export function Header() {
                     ) : (
                       <a
                         href={item.href.startsWith('#') ? `/${item.href}` : item.href}
-                        onClick={closeMenu}
+                        onClick={item.href.startsWith('#') ? (e) => handleHashClick(e, item.href) : closeMenu}
                         className="block rounded-lg py-3 px-3 text-sm font-medium uppercase tracking-wide text-tertiary transition hover:bg-tertiary/10 hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-inset"
                       >
                         {item.label}

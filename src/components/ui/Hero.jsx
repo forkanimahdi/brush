@@ -3,7 +3,7 @@ import { useGsapReveal } from '../../hooks/useGsap';
 import { useArts } from '../../context/ArtsContext';
 import { buyBookUrl } from '../../data/links';
 
-const HERO_INTERVAL_MS = 4500;
+const HERO_INTERVAL_MS = 7000;
 const FLASH_DURATION_MS = 180;
 
 /**

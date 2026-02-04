@@ -201,6 +201,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         WebkitBackfaceVisibility: 'hidden',
                         isolation: 'isolate',
                         willChange: 'transform',
+                        zIndex: isFront ? 10 : 0,
                       }}
                       aria-label={`View ${item.alt}`}
                     >
