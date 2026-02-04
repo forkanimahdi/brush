@@ -1,25 +1,40 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { galleryItems } from '../../data/gallery';
 import { useCarousel3D } from '../../hooks/useCarousel3D';
 import { useModalTransition } from '../../hooks/useModalTransition';
 import { useSwipe } from '../../hooks/useSwipe';
 import { useCarouselDimensions } from '../../hooks/useCarouselDimensions';
 import { useGalleryTransition } from '../../context/GalleryTransitionContext';
+import { useArts } from '../../context/ArtsContext';
 
 const SCALE_CENTER = 1;
-const SCALE_SIDE_FALLOFF = 0.14;
-const SCALE_MIN = 0.8;
+const SCALE_SIDE_FALLOFF = 0.28;
+const SCALE_MIN = 0.22;
+const OPACITY_CENTER = 1;
+const OPACITY_FALLOFF = 0.35;
+const OPACITY_MIN = 0.08;
 
 /**
  * 3D gallery carousel. Clicking a slide starts shared-element transition:
  * image animates from carousel position to detail page position.
  */
+/** Map arts to carousel item shape (id, src, alt, caption). */
+function toCarouselItems(artsList) {
+  return artsList.map((a) => ({
+    id: a.id,
+    src: a.image,
+    alt: a.name,
+    caption: a.name,
+  }));
+}
+
 export function GalleryCarousel({ isOpen, onClose }) {
   const navigate = useNavigate();
   const sceneRef = useRef(null);
+  const { arts } = useArts();
   const { startTransition } = useGalleryTransition();
   const dims = useCarouselDimensions();
+  const galleryItems = useMemo(() => toCarouselItems(arts), [arts]);
   const { ringRef, currentIndex, goNext, goPrev, angleStep } = useCarousel3D(galleryItems, {
     duration: 1.35,
     ease: 'power3.out',
@@ -79,6 +94,12 @@ export function GalleryCarousel({ isOpen, onClose }) {
     let dist = Math.abs(index - currentIndex);
     dist = Math.min(dist, count - dist);
     return Math.max(SCALE_MIN, SCALE_CENTER - SCALE_SIDE_FALLOFF * dist);
+  };
+
+  const getOpacity = (index) => {
+    let dist = Math.abs(index - currentIndex);
+    dist = Math.min(dist, count - dist);
+    return Math.max(OPACITY_MIN, OPACITY_CENTER - OPACITY_FALLOFF * dist);
   };
 
   return (
@@ -167,8 +188,9 @@ export function GalleryCarousel({ isOpen, onClose }) {
               >
                 {galleryItems.map((item, i) => {
                   const scale = getScale(i);
+                  const opacity = getOpacity(i);
                   const isFront = i === currentIndex;
-                  const nudgeZ = isFront ? 6 : 0;
+                  const nudgeZ = isFront ? 8 : 0;
                   return (
                     <button
                       key={item.id}
@@ -186,6 +208,7 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         WebkitBackfaceVisibility: 'hidden',
                         isolation: 'isolate',
                         willChange: 'transform',
+                        opacity,
                       }}
                       aria-label={`View ${item.alt}`}
                     >
@@ -193,8 +216,9 @@ export function GalleryCarousel({ isOpen, onClose }) {
                         <img
                           src={item.src}
                           alt={item.alt}
-                          className="block h-full w-full object-cover object-center pointer-events-none"
+                          className="block h-full w-full object-cover object-center pointer-events-none select-none"
                           draggable={false}
+                          loading="eager"
                         />
                       </span>
                     </button>

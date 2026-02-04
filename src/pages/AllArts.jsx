@@ -1,17 +1,18 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/layout/PageLayout';
-import { artworks, artworkCategories, getArtworksByCategory } from '../data/artworks';
+import { useArts } from '../context/ArtsContext';
 
 /**
- * All arts page with filters. Data from data/artworks.js; filter by category.
+ * All arts page with filters by gallery type (marriage, religion, omrah, etc.).
  */
 export function AllArts() {
-  const [category, setCategory] = useState('');
+  const { arts, galleryTypes, getArtsByType } = useArts();
+  const [type, setType] = useState('');
 
   const filtered = useMemo(
-    () => getArtworksByCategory(category || undefined),
-    [category]
+    () => getArtsByType(type || undefined),
+    [type, getArtsByType]
   );
 
   return (
@@ -29,21 +30,32 @@ export function AllArts() {
             All Arts
           </h1>
           <p className="mt-2 text-tertiary/70">
-            Browse all works. Use filters to narrow by technique.
+            Browse all works. Filter by gallery type.
           </p>
         </header>
 
         <nav
           className="mb-10 flex flex-wrap gap-2 border-b border-tertiary/10 pb-6 md:mb-12"
-          aria-label="Filter by category"
+          aria-label="Filter by gallery type"
         >
-          {artworkCategories.map((cat) => (
+          <button
+            type="button"
+            onClick={() => setType('')}
+            className={`rounded-sm px-4 py-2 text-sm font-medium uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-secondary/50 ${
+              type === ''
+                ? 'bg-tertiary text-primary'
+                : 'bg-primary/40 text-tertiary/80 hover:bg-tertiary/10 hover:text-tertiary'
+            }`}
+          >
+            All
+          </button>
+          {galleryTypes.map((cat) => (
             <button
               key={cat.id}
               type="button"
-              onClick={() => setCategory(cat.value)}
+              onClick={() => setType(cat.id)}
               className={`rounded-sm px-4 py-2 text-sm font-medium uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-secondary/50 ${
-                (category || '') === cat.value
+                type === cat.id
                   ? 'bg-tertiary text-primary'
                   : 'bg-primary/40 text-tertiary/80 hover:bg-tertiary/10 hover:text-tertiary'
               }`}
@@ -56,17 +68,20 @@ export function AllArts() {
         <ul className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" role="list">
           {filtered.map((item) => (
             <li key={item.id}>
-              <article className="overflow-hidden rounded-sm border border-tertiary/10 bg-surface">
+              <Link
+                to={`/gallery/${item.id}`}
+                className="block overflow-hidden rounded-sm border border-tertiary/10 bg-surface transition hover:border-tertiary/20 focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              >
                 <img
                   src={item.image}
-                  alt={item.alt}
+                  alt={item.name}
                   className="h-72 w-full object-cover md:h-80"
                 />
                 <div className="border-t border-tertiary/10 px-4 py-4">
-                  <h2 className="text-lg font-medium text-tertiary">{item.title}</h2>
-                  <p className="mt-1 text-sm text-tertiary/70">{item.description}</p>
+                  <h2 className="text-lg font-medium text-tertiary">{item.name}</h2>
+                  <p className="mt-1 line-clamp-2 text-sm text-tertiary/70">{item.description}</p>
                 </div>
-              </article>
+              </Link>
             </li>
           ))}
         </ul>

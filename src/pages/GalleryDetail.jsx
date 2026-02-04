@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { getGalleryItemById } from '../data/gallery';
 import { PageLayout } from '../components/layout/PageLayout';
 import { useGalleryTransition } from '../context/GalleryTransitionContext';
+import { useArts } from '../context/ArtsContext';
 
 /**
  * Gallery item detail page. Image enters via shared-element transition from carousel
@@ -11,7 +11,9 @@ import { useGalleryTransition } from '../context/GalleryTransitionContext';
  */
 export function GalleryDetail() {
   const { id } = useParams();
-  const item = getGalleryItemById(id);
+  const { getArtById, galleryTypes } = useArts();
+  const item = getArtById(id);
+  const typeLabel = item ? galleryTypes.find((t) => t.id === item.type)?.label : null;
   const imageRef = useRef(null);
   const { transitionItemId } = useGalleryTransition();
   const isFromCarousel = transitionItemId === id;
@@ -66,18 +68,23 @@ export function GalleryDetail() {
           style={isFromCarousel ? { opacity: 0 } : undefined}
         >
           <img
-            src={item.src}
-            alt={item.alt}
+            src={item.image}
+            alt={item.name}
             className="w-full object-cover"
           />
         </div>
         <header className="mt-8">
           <h1 className="text-3xl font-light tracking-wide text-tertiary md:text-4xl">
-            {item.caption}
+            {item.name}
           </h1>
           {item.description && (
             <p className="mt-4 text-tertiary/80 leading-relaxed">
               {item.description}
+            </p>
+          )}
+          {typeLabel && (
+            <p className="mt-2 text-sm uppercase tracking-wide text-tertiary/60">
+              {typeLabel}
             </p>
           )}
         </header>

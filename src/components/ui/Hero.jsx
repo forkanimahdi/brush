@@ -1,18 +1,34 @@
 import { useGsapReveal } from '../../hooks/useGsap';
+import { useArts } from '../../context/ArtsContext';
+import { buyBookUrl } from '../../data/links';
 
 /**
- * Hero section for home. Subtle entrance via useGsapReveal.
+ * Hero section: real arts data (background from first art), book CTA.
  */
 export function Hero() {
+  const { arts } = useArts();
   const titleRef = useGsapReveal({ y: 32, duration: 1, delay: 0.2 });
   const subRef = useGsapReveal({ y: 24, duration: 0.9, delay: 0.4 });
+  const ctaRef = useGsapReveal({ y: 20, duration: 0.8, delay: 0.55 });
+
+  const heroImage = arts.length > 0 ? arts[0].image : null;
 
   return (
     <section
       id="home"
       className="relative flex min-h-[85vh] flex-col justify-center bg-quaternary px-4 py-24 md:min-h-[90vh] md:px-6 md:py-32 lg:px-8"
+      style={
+        heroImage
+          ? {
+              backgroundImage: `url(${heroImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }
+          : undefined
+      }
     >
-      <div className="mx-auto max-w-4xl text-center">
+      <div className="absolute inset-0 bg-quaternary/85" aria-hidden />
+      <div className="relative z-10 mx-auto max-w-4xl text-center">
         <h1
           ref={titleRef}
           className="text-4xl font-light tracking-tight text-primary md:text-5xl lg:text-6xl"
@@ -21,10 +37,25 @@ export function Hero() {
         </h1>
         <p
           ref={subRef}
-          className="mt-6 max-w-xl mx-auto text-lg text-primary/80 md:text-xl"
+          className="mx-auto mt-6 max-w-xl text-lg text-primary/80 md:text-xl"
         >
           Luxury strokes. Timeless script. Hanane Brush.
         </p>
+        <p className="mx-auto mt-3 max-w-lg text-base text-primary/70 md:text-lg">
+          Discover the book—a journey through traditional script and contemporary expression.
+        </p>
+        <div className="mt-10">
+          <a
+            ref={ctaRef}
+            href={buyBookUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-sm border-2 border-primary bg-primary px-8 py-3.5 text-sm font-medium uppercase tracking-wide text-quaternary transition hover:border-secondary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-quaternary"
+            aria-label="Buy the book on WhatsApp"
+          >
+            Buy the book
+          </a>
+        </div>
       </div>
     </section>
   );

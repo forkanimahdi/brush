@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
-import { artworks } from '../../data/artworks';
 import { useGsapStagger } from '../../hooks/useGsap';
+import { useArts } from '../../context/ArtsContext';
 
 /**
- * Featured artworks. Renders from data/artworks.js via .map(). Discover more → All Arts page.
+ * Featured artworks from arts context. Discover more → All Arts page.
  */
 export function ArtworksSection() {
   const ref = useGsapStagger({ stagger: 0.15, y: 28 });
+  const { arts } = useArts();
+  const featured = arts.slice(0, 6);
 
   return (
     <section id="artworks" className="border-t border-tertiary/10 bg-primary/40 py-20 md:py-28">
@@ -15,19 +17,22 @@ export function ArtworksSection() {
           Artworks
         </h2>
         <ul ref={ref} className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3" role="list">
-          {artworks.slice(0, 3).map((item) => (
+          {featured.map((item) => (
             <li key={item.id} data-reveal>
-              <article className="overflow-hidden rounded-sm border border-tertiary/10 bg-surface">
+              <Link
+                to={`/gallery/${item.id}`}
+                className="block overflow-hidden rounded-sm border border-tertiary/10 bg-surface transition hover:border-tertiary/20 focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              >
                 <img
                   src={item.image}
-                  alt={item.alt}
+                  alt={item.name}
                   className="h-72 w-full object-cover md:h-80"
                 />
                 <div className="border-t border-tertiary/10 px-4 py-4">
-                  <h3 className="text-lg font-medium text-tertiary">{item.title}</h3>
-                  <p className="mt-1 text-sm text-tertiary/70">{item.description}</p>
+                  <h3 className="text-lg font-medium text-tertiary">{item.name}</h3>
+                  <p className="mt-1 line-clamp-2 text-sm text-tertiary/70">{item.description}</p>
                 </div>
-              </article>
+              </Link>
             </li>
           ))}
         </ul>

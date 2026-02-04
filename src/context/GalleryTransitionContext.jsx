@@ -87,7 +87,7 @@ export function GalleryTransitionProvider({ children }) {
           aria-hidden
         >
           <img
-            src={state.item.src}
+            src={state.item.image ?? state.item.src}
             alt=""
             className="h-full w-full object-cover object-center"
             draggable={false}
