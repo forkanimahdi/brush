@@ -17,6 +17,16 @@ import { statementQuotes } from '../data/statementQuotes';
  */
 export const Home = () => {
   const [isGalleryOpen, setGalleryOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const hash = location.hash || window.location.hash;
+    if (!hash) return;
+    const id = hash.replace('#', '').trim();
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [location.pathname, location.hash]);
 
   return (
     <PageLayout>
