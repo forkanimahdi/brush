@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Logo } from '../ui/Logo';
 import { navigationItems } from '../../data/navigation';
 import { SocialLinks } from '../ui/SocialLinks';
 
 /**
  * Site header: logo + nav + social. Responsive: slide-in panel from right on mobile.
+ * Hash links: on home = smooth scroll; off home = navigate to home then scroll.
  */
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -53,19 +56,34 @@ export function Header() {
         >
           {navigationItems.map((item) => {
             const isInternalRoute = item.href.startsWith('/') && !item.href.startsWith('/#');
-            return isInternalRoute ? (
-              <Link
-                key={item.id}
-                to={item.href}
-                className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
-              >
-                {item.label}
-              </Link>
-            ) : (
+            const isHashLink = item.href.startsWith('#');
+            if (isInternalRoute) {
+              return (
+                <Link
+                  key={item.id}
+                  to={item.href}
+                  className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
+                >
+                  {item.label}
+                </Link>
+              );
+            }
+            if (isHashLink && !isHome) {
+              return (
+                <Link
+                  key={item.id}
+                  to={`/${item.href}`}
+                  className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
+                >
+                  {item.label}
+                </Link>
+              );
+            }
+            return (
               <a
                 key={item.id}
                 href={item.href.startsWith('#') ? `/${item.href}` : item.href}
-                onClick={item.href.startsWith('#') ? (e) => handleHashClick(e, item.href) : undefined}
+                onClick={isHashLink ? (e) => handleHashClick(e, item.href) : undefined}
                 className="text-sm font-medium uppercase tracking-wide text-tertiary transition hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 rounded"
               >
                 {item.label}
@@ -95,7 +113,7 @@ export function Header() {
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className="fixed inset-y-0 right-0 z-40 w-full max-w-[280px] border-l border-tertiary/10 bg-surface shadow-xl md:hidden"
+        className="fixed inset-y-0 right-0 z-40 w-full max-w-[280px] border-l border-tertiary/10 bg-white shadow-xl md:hidden"
         aria-hidden={!menuOpen}
         style={{
           transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
